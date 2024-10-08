@@ -1,5 +1,9 @@
 <?php
 $conn = mysqli_connect("localhost", "root", "", "test");
 
-$queryTampil = "select * from upload order by id desc";
+if($conn->connect_error){
+    die("connection failed: ". $conn->connect_error);
+}
+
+// $queryTampil = "select * from user_data where username = '" . $_SESSION["username"] . "' order by id desc";
 ?>
