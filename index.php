@@ -63,43 +63,39 @@ if (isset($_GET["delete"])) {
 // }
 
 if(isset($_POST["submit"])){
-    $name = htmlspecialchars($_POST["name"]); // Nama file yang diinput user
+    $name = htmlspecialchars($_POST["name"]);
 
-    // Periksa apakah ada file yang diupload
     if(isset($_FILES["image"]["name"])){
-        $totalFiles = count($_FILES["image"]["name"]); // Total file yang diupload
+        $totalFiles = count($_FILES["image"]["name"]);
 
         for($i = 0; $i < $totalFiles; $i++){
             $fileName = $_FILES["image"]["name"][$i];
             $fileSize = $_FILES["image"]["size"][$i];
             $tmpName = $_FILES["image"]["tmp_name"][$i];
 
-            // Validasi ekstensi dan ukuran file
             $validExtension = ['jpg', 'jpeg', 'png'];
             $imageExtension = explode('.', $fileName);
             $imageExtension = strtolower(end($imageExtension));
 
             if(!in_array($imageExtension, $validExtension)){
                 echo "<script> alert('Jenis File $fileName tidak diterima') </script>";
-                continue; // Lanjutkan ke file berikutnya jika validasi gagal
+                continue;
             }
 
             if($fileSize > 10000000){
                 echo "<script> alert('Ukuran gambar $fileName terlalu besar') </script>";
-                continue; // Lanjutkan ke file berikutnya jika ukuran file terlalu besar
+                continue;
             }
 
-            // Generate nama file unik dan pindahkan file ke folder
             $newImageName = uniqid() . '.' . $imageExtension;
             move_uploaded_file($tmpName, 'img/'. $newImageName);
 
-            // Simpan data ke database
             $queryUpload = "INSERT INTO upload (id, name, image) VALUES ('', '$name', '$newImageName')";
             mysqli_query($conn, $queryUpload);
         }
 
         echo "<script> alert('Gambar-gambar telah berhasil di-upload') </script>";
-         header("Location: index.php"); // Redirect ke halaman index.php
+         header("Location: index.php");
         exit(); 
     } else {
         echo "<script> alert('Tidak ada gambar yang di-upload') </script>";
@@ -140,9 +136,7 @@ if(isset($_POST["submit"])){
                     $baris = mysqli_query($conn, $queryTampil);
                 ?>
 
-                <?php 
-                    foreach($baris as $list) :
-                ?>
+                <?php foreach($baris as $list) :?>
                 <tr>
                     <td><?php echo $i++; ?></td>
                     <td><?php echo $list["name"]; ?></td>
