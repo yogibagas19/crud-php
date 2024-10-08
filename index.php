@@ -99,6 +99,8 @@ if(isset($_POST["submit"])){
         }
 
         echo "<script> alert('Gambar-gambar telah berhasil di-upload') </script>";
+         header("Location: index.php"); // Redirect ke halaman index.php
+        exit(); 
     } else {
         echo "<script> alert('Tidak ada gambar yang di-upload') </script>";
     }
