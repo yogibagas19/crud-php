@@ -1,6 +1,11 @@
 <?php
 require 'connection.php';
 
+session_start();
+if (!isset($_SESSION["username"])) {
+    header("Location: login.php");
+}
+
 if (isset($_GET["delete"])) {
     $id = $_GET["delete"];
 
@@ -62,13 +67,14 @@ if (isset($_GET["delete"])) {
 //     }
 // }
 
-if(isset($_POST["submit"])){
+if (isset($_POST["submit"])) {
     $name = htmlspecialchars($_POST["name"]);
+    $username = $_SESSION["username"];
 
-    if(isset($_FILES["image"]["name"])){
+    if (isset($_FILES["image"]["name"])) {
         $totalFiles = count($_FILES["image"]["name"]);
 
-        for($i = 0; $i < $totalFiles; $i++){
+        for ($i = 0; $i < $totalFiles; $i++) {
             $fileName = $_FILES["image"]["name"][$i];
             $fileSize = $_FILES["image"]["size"][$i];
             $tmpName = $_FILES["image"]["tmp_name"][$i];
@@ -77,78 +83,84 @@ if(isset($_POST["submit"])){
             $imageExtension = explode('.', $fileName);
             $imageExtension = strtolower(end($imageExtension));
 
-            if(!in_array($imageExtension, $validExtension)){
+            if (!in_array($imageExtension, $validExtension)) {
                 echo "<script> alert('Jenis File $fileName tidak diterima') </script>";
                 continue;
             }
 
-            if($fileSize > 10000000){
+            if ($fileSize > 10000000) {
                 echo "<script> alert('Ukuran gambar $fileName terlalu besar') </script>";
                 continue;
             }
 
             $newImageName = uniqid() . '.' . $imageExtension;
-            move_uploaded_file($tmpName, 'img/'. $newImageName);
+            move_uploaded_file($tmpName, 'img/' . $newImageName);
 
-            $queryUpload = "INSERT INTO upload (id, name, image) VALUES ('', '$name', '$newImageName')";
+            $queryUpload = "INSERT INTO user_data (id, username , data) VALUES ('', '$username' ,'$newImageName')";
             mysqli_query($conn, $queryUpload);
         }
 
         echo "<script> alert('Gambar-gambar telah berhasil di-upload') </script>";
-         header("Location: index.php");
-        exit(); 
+        header("Location: index.php");
+        exit();
     } else {
         echo "<script> alert('Tidak ada gambar yang di-upload') </script>";
     }
 }
+
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
     <title>CRUD</title>
 </head>
+
 <body>
     <header>
         <p>Ini Header</p>
+        <p>halo <?php echo $_SESSION["username"]; ?></p>
+        <a href="logout.php">logout</a>
     </header>
 
     <div class="container">
         <form action="" method="post" enctype="multipart/form-data" autocomplete="off">
             <label for="name">Nama File :</label>
             <input type="text" name="name" id="name" required value="">
-            <input type="file" multiple name="image[]" id="image" 
-            accept=".jpg, .jpeg, .png">
+            <input type="file" multiple name="image[]" id="image"
+                accept=".jpg, .jpeg, .png">
             <button type="submit" name="submit">Submit</button>
         </form>
         <div class="tampilData">
             <table>
                 <tr>
                     <td>#</td>
-                    <td>Nama</td>
                     <td>Gambar</td>
                     <td>Hapus</td>
                 </tr>
                 <?php
-                    $i = 1;
-                    $baris = mysqli_query($conn, $queryTampil);
+                $i = 1;
+                $queryTampil = "SELECT * FROM user_data WHERE username = '" . $_SESSION["username"] . "'";
+                $baris = mysqli_query($conn, $queryTampil);
                 ?>
 
-                <?php foreach($baris as $list) :?>
-                <tr>
-                    <td><?php echo $i++; ?></td>
-                    <td><?php echo $list["name"]; ?></td>
-                    <td><img src="img/<?php echo $list["image"]; ?>" alt="<?php echo $list["image"]; ?>" width="500"></td>
-                    <td>
-                        <a href="index.php?delete=<?php echo $list["id"]; ?>" onclick="return confirm('Yakin ingin menghapus data ini?')">Delete</a>
-                    </td>
-                </tr>
+                <?php foreach ($baris as $list) : ?>
+                    <tr>
+                        <td><?php echo $i++; ?></td>
+                        <td><img src="img/<?php echo $list["data"]; ?>" alt="<?php echo $list["data"]; ?>" width="500"></td>
+                        <td>
+                            <a href="index.php?delete=<?php echo $list["id"]; ?>" onclick="return confirm('Yakin ingin menghapus data ini?')">Delete</a>
+                        </td>
+                    </tr>
                 <?php endforeach; ?>
             </table>
         </div>
     </div>
 
 </body>
+
 </html>
